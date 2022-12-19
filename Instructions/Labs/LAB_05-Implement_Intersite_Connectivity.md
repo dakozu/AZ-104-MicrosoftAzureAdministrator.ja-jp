@@ -35,52 +35,32 @@ Contoso では、ボストン、ニューヨーク、シアトルの各オフィ
 
 1. [Azure portal](https://portal.azure.com) にサインインします。
 
-1. Azure portal の右上にあるアイコンをクリックして **Azure Cloud Shell** を開きます。
+1. Azure portal で、「カスタム」と検索して「カスタム テンプレートのデプロイ」を選択します。
 
-1. **Bash** または **PowerShell** の選択を求めるメッセージが表示されたら、 **[PowerShell]** を選択します。
+1. **カスタム デプロイ**ブレードで **[エディターで独自のテンプレートを作成する]** クリックします。
 
-    >**注**: **Cloud Shell** の初回起動時に "**ストレージがマウントされていません**" というメッセージが表示された場合は、このラボで使用しているサブスクリプションを選択し、**[ストレージの作成]** を選択します。
+1. **ファイルの読み込み** をクリックして **\\Allfiles\\Labs\\05\\az104-05-vnetvm-loop-template.json** ファイルを開きます。
 
-1. [Cloud Shell] ペインのツールバーで、 **[ファイルのアップロード/ダウンロード]** アイコンをクリックし、ドロップダウン メニューで **[アップロード]** をクリックして、ファイル **\\Allfiles\\Labs\\05\\az104-05-vnetvm-loop-template.json** と **\\Allfiles\\Labs\\05\\az104-05-vnetvm-loop-parameters.json** を Cloud Shell のホーム ディレクトリにアップロードします。
+1. **テンプレートの編集** ブレードで **[保存]** をクリックします。
 
-1. アップロードしたばかりの**パラメーター** ファイルを編集し、パスワードを変更します。 シェルでのファイルの編集に関してヘルプが必要な場合は、インストラクターに相談してください。 ベスト プラクティスとして、パスワードなどのシークレットは、キー コンテナーに安全に保存する必要があります。 
+1. **カスタム デプロイ** ブレードで **[パラメーターの編集]** をクリックします。
 
-1. Cloud Shell ペインから、以下を実行して、ラボ環境をホストするリソース グループを作成します。 最初の 2 つの仮想ネットワークと 1 組の仮想マシンが [Azure_region_1] にデプロイされます。 3 番目の仮想ネットワークと 3 番目の仮想マシンは、同じリソース グループではあるものの、別の [Azure_region_2] にデプロイされます。 (角かっこを含む [Azure_region_1] および [Azure_region_2] プレースホルダーを、これらの Azure 仮想マシンをデプロイする予定の 2 つの異なる Azure リージョンの名前に置き換えます。 たとえば、$location 1 = 'eastus' です。 Get-AzLocation を使用して、すべての場所を一覧表示できます)。
+1. **パラメーターの編集** ブレードで **[ファイルの読み込み]** をクリックして **\\Allfiles\\Labs\\05\\az104-05-vnetvm-loop-parameters.json** を開きます。
 
-   ```powershell
-   $location1 = 'eastus'
+1. **パラメーターの編集** ブレードで **[保存]** をクリックします。
 
-   $location2 = 'westus'
+1. **リソース グループ** の新規作成をクリックして **az104-05-rg1** という名前のリソースグループを作成して選択します。
 
-   $rgName = 'az104-05-rg1'
+1. 残りの未入力のパラメーターに以下の値を入力して **[確認と作成]** をクリックします。
 
-   New-AzResourceGroup -Name $rgName -Location $location1
-   ```
+    | 設定 | 値|
+    | --- | --- |
+    | リージョン | eastus |   
+    | Location 1 | eastus |
+    | Location 2 | australiaeast |
 
-   >**注**:上記で使ったリージョンは、このラボを最後に公式にレビューしたときにテスト済みであり、機能することがわかっています。 別のリージョンを使いたい場合、または機能しなくなった場合は、Standard D2Sv3 仮想マシンをデプロイできる 2 つの異なるリージョンを決める必要があります。
-   >
-   >Azure リージョンを識別するには、Cloud Shell の PowerShell セッションから **(Get-AzLocation).Location** を実行します。
-   >
-   >使う 2 つのリージョンを決めたら、それぞれのリージョンに対して Cloud Shell で次のコマンドを実行し、Standard D2Sv3 仮想マシンをデプロイできることを確認します。
-   >
-   >```az vm list-skus --location <Replace with your location> -o table --query "[? contains(name,'Standard_D2s')].name" ```
-   >
-   >コマンドから結果が返されない場合は、別のリージョンを選ぶ必要があります。 2 つの適切なリージョンを決めたら、前述のコード ブロック内のリージョンを調整することができます。
-
-1. [Cloud Shell] ウィンドウで、次のコマンドを実行して 3 つのバーチャル ネットワークを作成し、アップロードしたテンプレートとパラメーター ファイルを使用して仮想マシンをデプロイします。
-
-   ```powershell
-   New-AzResourceGroupDeployment `
-      -ResourceGroupName $rgName `
-      -TemplateFile $HOME/az104-05-vnetvm-loop-template.json `
-      -TemplateParameterFile $HOME/az104-05-vnetvm-loop-parameters.json `
-      -location1 $location1 `
-      -location2 $location2
-   ```
-
-    >**注**: デプロイが完了するまで待ってから、次の手順に進んでください。 これには 2 分ほどかかります。
-
-1. [Cloud Shell] ペインを閉じます。
+1. エラーがないことを確認して **[作成]** をクリックします。
+    >**注**:リソースが作成されるまで待ちます。作成が完了するまで数分かかります。
 
 #### <a name="task-2-configure-local-and-global-virtual-network-peering"></a>タスク 2:ローカルおよびグローバルバーチャル ネットワーク ピアリングを構成する
 
