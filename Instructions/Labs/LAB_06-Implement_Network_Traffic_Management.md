@@ -41,54 +41,40 @@ lab:
 
 このタスクでは、同じ Azure リージョンに 4 つの仮想マシンをデプロイします。 最初の 2 つはハブバーチャル ネットワークに存在し、残りはそれぞれ別個のスポークバーチャル ネットワークに存在します。
 
+
 1. [Azure portal](https://portal.azure.com) にサインインします。
 
-1. Azure portal の右上にあるアイコンをクリックして **Azure Cloud Shell** を開きます。
+1. Azure portal で、「カスタム」と検索して「カスタム テンプレートのデプロイ」を選択します。
 
-1. **Bash** または **PowerShell** の選択を求めるメッセージが表示されたら、 **[PowerShell]** を選択します。
+1. **カスタム デプロイ**ブレードで **[エディターで独自のテンプレートを作成する]** クリックします。
 
-    >**注**: **Cloud Shell** の初回起動時に "**ストレージがマウントされていません**" というメッセージが表示された場合は、このラボで使用しているサブスクリプションを選択し、**[ストレージの作成]** を選択します。
+1. **ファイルの読み込み** をクリックして **\\Allfiles\\Labs\\06\\az104-06-vms-loop-template.json** ファイルを開きます。
 
-1. [Cloud Shell] ペインのツールバーで、 **[ファイルのアップロード/ダウンロード]** アイコンをクリックし、ドロップダウン メニューで **[アップロード]** をクリックして、ファイル **\\Allfiles\\Labs\\06\\az104-06-vms-loop-template.json** と **\\Allfiles\\Labs\\06\\az104-06-vms-loop-parameters.json** を Cloud Shell のホーム ディレクトリにアップロードします。
+1. **テンプレートの編集** ブレードで **[保存]** をクリックします。
 
-1. アップロードしたばかりの**パラメーター** ファイルを編集し、パスワードを変更します。 シェルでのファイルの編集に関してヘルプが必要な場合は、インストラクターに相談してください。 ベスト プラクティスとして、パスワードなどのシークレットは、キー コンテナーに安全に保存する必要があります。 
+1. **カスタム デプロイ** ブレードで **[パラメーターの編集]** をクリックします。
 
-1. [Cloud Shell] ペインから次を実行して、ラボ環境をホストする最初のリソース グループを作成します (`[Azure_region]` プレースホルダーを、Azure Virtual Machines をデプロイする Azure リージョンの名前に置き換えます)("(Get-AzLocation).Location" コマンドレットを使用して、リージョン一覧を取得できます)。
+1. **パラメーターの編集** ブレードで **[ファイルの読み込み]** をクリックして **\\Allfiles\\Labs\\06\\az104-06-vms-loop-parameters.json** を開きます。
 
-    ```powershell 
-    $location = '[Azure_region]'
-    ```
-    
-    ここで、リソース グループ名は次のようになります。
-    ```powershell
-    $rgName = 'az104-06-rg1'
-    ```
-    
-    最後に、目的の場所にリソース グループを作成します。
-    ```powershell
-    New-AzResourceGroup -Name $rgName -Location $location
-    ```
+1. **パラメーターの編集** ブレードで **[保存]** をクリックします。
+
+1. **リソース グループ** の新規作成をクリックして **az104-06-rg1** という名前のリソースグループを作成して選択します。
+
+1. 残りの未入力のパラメーターに以下の値を入力して **[確認と作成]** をクリックします。
+
+    | 設定 | 値|
+    | --- | --- |
+    | リージョン | eastus |   
+
+1. エラーがないことを確認して **[作成]** をクリックします。
+    >**注**:リソースが作成されるまで待ちます。作成が完了するまで数分かかります。
 
 
-1. [Cloud Shell] ウィンドウで、次のコマンドを実行して 3 つの仮想ネットワークを作成し、アップロードしたテンプレートとパラメーター ファイルを使用して、4 つの Azure VM を作成します。
+1. Azure portal の右上にあるアイコンをクリックして Azure Cloud Shell を開きます。
 
-   ```powershell
-   New-AzResourceGroupDeployment `
-      -ResourceGroupName $rgName `
-      -TemplateFile $HOME/az104-06-vms-loop-template.json `
-      -TemplateParameterFile $HOME/az104-06-vms-loop-parameters.json
-   ```
+1. Bash または PowerShell の選択を求めるメッセージが表示されたら、 [PowerShell] を選択します。
 
-    >**注**: デプロイが完了するまで待ってから、次の手順に進んでください。 これには 5 分ほどかかります。
-
-    >**注**:VM サイズが利用できないというエラーが発生した場合、インストラクターにサポートを依頼し、次の手順を試してください。
-    > 1. CloudShell で `{}` ボタンをクリックし、左側のバーから **az104-06-vms-loop-parameters.json** を選択して、`vmSize` パラメーターの値をメモしておきます。
-    > 1. "az104-06-rg1" リソース グループがデプロイされている場所を確認します。 CloudShell で `az group show -n az104-06-rg1 --query location` を実行して、それを取得することができます。
-    > 1. CloudShell で `az vm list-skus --location <Replace with your location> -o table --query "[? contains(name,'Standard_D2s')].name"` を実行します。
-    > 1. `vmSize` パラメーターの値を、先ほど実行したコマンドによって返された値のいずれかに置き換えます。 値が返されない場合は、必要に応じて別のリージョンを選んでデプロイする必要があります。 また、"Standard_B1s" のような別のファミリ名を選ぶこともできます。
-    > 1. 次に、`New-AzResourceGroupDeployment` コマンドを再度実行して、テンプレートを再デプロイします。 上方向ボタンを数回押して、最後に実行されたコマンドを上に持ってくることができます。
-
-1. Cloud Shell ウィンドウから、以下を実行して、前の手順でデプロイされた Azure VM に Network Watcher 拡張機能をインストールします。
+1. [Cloud Shell] ペインから以下を実行して、前の手順でデプロイされた Azure VM に Network Watcher 拡張機能をインストールします。
 
    ```powershell
    $rgName = 'az104-06-rg1'
